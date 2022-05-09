@@ -46,6 +46,48 @@ final class FooViewModelTests: XCTestCase {
                 XCTAssertEqual(loadSuccessCount, 1)
             }
         }
+
+        await XCTContext.runActivityAsync(named: "失敗") { _ in
+            await XCTContext.runActivityAsync(named: "isLoading") { _ in
+                let viewModel: FooViewModel<FooService> = .init(id: "abc")
+
+                XCTAssertFalse(viewModel.isLoading)
+
+                async let result: Void = viewModel.load()
+                await Task.yield()
+
+                XCTAssertTrue(viewModel.isLoading)
+
+                FooService.fetchFooContinuation?.resume(throwing: GeneralError(value: -1))
+                await result
+
+                XCTAssertFalse(viewModel.isLoading)
+            }
+
+            await XCTContext.runActivityAsync(named: "loadFailure") { _ in
+                let viewModel: FooViewModel<FooService> = .init(id: "abc")
+                var cancellables: Set<AnyCancellable> = []
+
+                var loadFailureCount = 0
+                viewModel.loadFailure
+                    .sink { _ in
+                        loadFailureCount += 1
+                    }
+                    .store(in: &cancellables)
+
+                XCTAssertEqual(loadFailureCount, 0)
+
+                async let result: Void = viewModel.load()
+                await Task.yield()
+
+                XCTAssertEqual(loadFailureCount, 0)
+
+                FooService.fetchFooContinuation?.resume(throwing: GeneralError(value: -1))
+                await result
+
+                XCTAssertEqual(loadFailureCount, 1)
+            }
+        }
     }
 }
 
