@@ -16,7 +16,7 @@ final class FooViewModelTests: XCTestCase {
 
                 XCTAssertTrue(viewModel.isLoading)
 
-                FooService.fetchFooContinuation?.resume(returning: Foo(id: "abc", value: 42))
+                FooService.fetchFooContinuation!.resume(returning: Foo(id: "abc", value: 42))
                 await result
 
                 XCTAssertFalse(viewModel.isLoading)
@@ -40,7 +40,7 @@ final class FooViewModelTests: XCTestCase {
 
                 XCTAssertEqual(loadSuccessCount, 0)
 
-                FooService.fetchFooContinuation?.resume(returning: Foo(id: "abc", value: 42))
+                FooService.fetchFooContinuation!.resume(returning: Foo(id: "abc", value: 42))
                 await result
 
                 XCTAssertEqual(loadSuccessCount, 1)
