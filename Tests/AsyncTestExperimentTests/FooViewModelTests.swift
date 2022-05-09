@@ -1,4 +1,5 @@
 import XCTest
+import Combine
 import AsyncTestExperiment
 
 @MainActor
@@ -19,6 +20,30 @@ final class FooViewModelTests: XCTestCase {
                 await result
 
                 XCTAssertFalse(viewModel.isLoading)
+            }
+
+            await XCTContext.runActivityAsync(named: "loadSuccess") { _ in
+                let viewModel: FooViewModel<FooService> = .init(id: "abc")
+                var cancellables: Set<AnyCancellable> = []
+
+                var loadSuccessCount = 0
+                viewModel.loadSuccess
+                    .sink { _ in
+                        loadSuccessCount += 1
+                    }
+                    .store(in: &cancellables)
+
+                XCTAssertEqual(loadSuccessCount, 0)
+
+                async let result: Void = viewModel.load()
+                await Task.yield()
+
+                XCTAssertEqual(loadSuccessCount, 0)
+
+                FooService.fetchFooContinuation?.resume(returning: Foo(id: "abc", value: 42))
+                await result
+
+                XCTAssertEqual(loadSuccessCount, 1)
             }
         }
     }
