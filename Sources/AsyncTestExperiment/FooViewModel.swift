@@ -8,6 +8,12 @@ public final class FooViewModel<FooService: FooServiceProtocol>: ObservableObjec
     @Published public private(set) var foo: Foo?
     @Published public private(set) var error: Error?
 
+    private let _loadSuccess: PassthroughSubject<Void, Never> = .init()
+    public var loadSuccess: AnyPublisher<Void, Never> { _loadSuccess.eraseToAnyPublisher() }
+
+    private let _loadFailure: PassthroughSubject<Void, Never> = .init()
+    public var loadFailure: AnyPublisher<Void, Never> { _loadFailure.eraseToAnyPublisher() }
+
     public init(id: Foo.ID) {
         self.id = id
     }
@@ -17,9 +23,11 @@ public final class FooViewModel<FooService: FooServiceProtocol>: ObservableObjec
         do {
             foo = try await FooService.fetchFoo(for: id)
             isLoading = false
+            _loadSuccess.send()
         } catch  {
             isLoading = false
             self.error = error
+            _loadFailure.send()
         }
     }
 }
