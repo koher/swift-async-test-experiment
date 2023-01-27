@@ -58,7 +58,7 @@ final class FooViewModelTests: XCTestCase {
 
                 XCTAssertTrue(viewModel.isLoading)
 
-                FooService.fetchFooContinuation?.resume(throwing: GeneralError(value: -1))
+                FooService.fetchFooContinuation!.resume(throwing: GeneralError(value: -1))
                 await result
 
                 XCTAssertFalse(viewModel.isLoading)
@@ -82,7 +82,7 @@ final class FooViewModelTests: XCTestCase {
 
                 XCTAssertEqual(loadFailureCount, 0)
 
-                FooService.fetchFooContinuation?.resume(throwing: GeneralError(value: -1))
+                FooService.fetchFooContinuation!.resume(throwing: GeneralError(value: -1))
                 await result
 
                 XCTAssertEqual(loadFailureCount, 1)
