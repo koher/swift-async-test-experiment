@@ -12,11 +12,15 @@ final class FooViewModelTests: XCTestCase {
                 XCTAssertFalse(viewModel.isLoading)
 
                 async let result: Void = viewModel.load()
-                await Task.yield()
+
+                while FooService.fetchFooContinuation == nil {
+                    await Task.yield()
+                }
 
                 XCTAssertTrue(viewModel.isLoading)
 
                 FooService.fetchFooContinuation!.resume(returning: Foo(id: "abc", value: 42))
+                FooService.fetchFooContinuation = nil
                 await result
 
                 XCTAssertFalse(viewModel.isLoading)
@@ -36,11 +40,15 @@ final class FooViewModelTests: XCTestCase {
                 XCTAssertEqual(loadSuccessCount, 0)
 
                 async let result: Void = viewModel.load()
-                await Task.yield()
+
+                while FooService.fetchFooContinuation == nil {
+                    await Task.yield()
+                }
 
                 XCTAssertEqual(loadSuccessCount, 0)
 
                 FooService.fetchFooContinuation!.resume(returning: Foo(id: "abc", value: 42))
+                FooService.fetchFooContinuation = nil
                 await result
 
                 XCTAssertEqual(loadSuccessCount, 1)
@@ -54,11 +62,15 @@ final class FooViewModelTests: XCTestCase {
                 XCTAssertFalse(viewModel.isLoading)
 
                 async let result: Void = viewModel.load()
-                await Task.yield()
+
+                while FooService.fetchFooContinuation == nil {
+                    await Task.yield()
+                }
 
                 XCTAssertTrue(viewModel.isLoading)
 
                 FooService.fetchFooContinuation!.resume(throwing: GeneralError(value: -1))
+                FooService.fetchFooContinuation = nil
                 await result
 
                 XCTAssertFalse(viewModel.isLoading)
@@ -78,11 +90,15 @@ final class FooViewModelTests: XCTestCase {
                 XCTAssertEqual(loadFailureCount, 0)
 
                 async let result: Void = viewModel.load()
-                await Task.yield()
+
+                while FooService.fetchFooContinuation == nil {
+                    await Task.yield()
+                }
 
                 XCTAssertEqual(loadFailureCount, 0)
 
                 FooService.fetchFooContinuation!.resume(throwing: GeneralError(value: -1))
+                FooService.fetchFooContinuation = nil
                 await result
 
                 XCTAssertEqual(loadFailureCount, 1)
